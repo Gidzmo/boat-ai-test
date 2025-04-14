@@ -30,13 +30,13 @@
 
   <form id="uploadForm">
     <label for="image">Upload billede(r):</label>
-    <input type="file" id="image" name="image" accept="image/*" multiple required>
+    <input type="file" id="image" name="images" accept="image/*" multiple required>
 
     <label for="description">Beskrivelse af båden:</label>
     <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
 
     <label for="reportType">Vurderingstype:</label>
-    <select id="reportType" name="reportType">
+    <select id="reportType" name="report_type">
       <option value="private">Privat vurdering</option>
       <option value="insurance">Til forsikring</option>
     </select>
@@ -51,20 +51,16 @@
       event.preventDefault();
 
       const formData = new FormData();
-      const images = document.getElementById('image').files;
+      const imageFiles = document.getElementById('image').files;
       const description = document.getElementById('description').value;
-      const reportType = document.getElementById('reportType').value;
+      const purpose = document.getElementById('reportType').value;
 
-      if (images.length === 0) {
-        alert("Vælg mindst ét billede.");
-        return;
+      for (let i = 0; i < imageFiles.length; i++) {
+        formData.append('images', imageFiles[i]); // Vigtigt: 'images' i flertal
       }
 
-      for (let i = 0; i < images.length; i++) {
-        formData.append('images', images[i]);
-      }
       formData.append('description', description);
-      formData.append('report_type', reportType);
+      formData.append('purpose', purpose);
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
@@ -76,8 +72,8 @@
         });
 
         if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Serverfejl (${res.status}): ${errorText}`);
+          const err = await res.text();
+          throw new Error('Fejl fra serveren: ' + err);
         }
 
         const data = await res.json();
