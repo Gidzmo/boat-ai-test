@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Båd AI-Vurdering</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 650px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f7faff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #0057e7;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0047c7;
+        }
+        #response {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h2>Båd AI-Vurdering</h2>
+
+    <input type="file" id="file" accept="image/*" multiple required>
+    <textarea id="description" rows="4" placeholder="Bådtype, stand, motor osv." required></textarea>
+    <button onclick="upload()">Få AI-vurdering</button>
+
+    <div id="response"></div>
+
+    <script>
+        async function upload() {
+            const responseDiv = document.getElementById("response");
+            const files = document.getElementById("file").files;
+            const description = document.getElementById("description").value;
+
+            if (!files.length || !description) {
+                responseDiv.textContent = "Tilføj både billeder og beskrivelse.";
+                return;
+            }
+
+            responseDiv.textContent = "Vurdering behandles af AI...";
+
+            const formData = new FormData();
+            for (let file of files) {
+                formData.append("files", file);
+            }
+            formData.append("description", description);
+
+            try {
+                const res = await fetch("https://boat-ai-backend-591818866071.europe-north1.run.app/upload/", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const result = await res.json();
+
+                if (res.ok) {
+                    responseDiv.textContent = result.response;
+                } else {
+                    responseDiv.textContent = "Fejl: " + (result.error || res.statusText);
+                }
+            } catch (err) {
+                responseDiv.textContent = "Netværksfejl: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
