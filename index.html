@@ -1,53 +1,97 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Båd AI-Vurdering</title>
+    <title>RenDiesel Båd AI-vurdering</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 650px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #f7faff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: linear-gradient(to bottom right, #e8f5ff, #ffffff);
+            font-family: 'Segoe UI', sans-serif;
+            color: #223;
+            padding: 30px;
         }
-        input, textarea, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e0e0e0;
         }
+
+        h1 {
+            color: #00786e;
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        input[type="file"],
+        textarea,
         button {
-            background-color: #0057e7;
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background-color: #00786e;
             color: white;
             border: none;
-            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
         }
+
         button:hover {
-            background-color: #0047c7;
+            background-color: #005f59;
         }
+
         #response {
-            margin-top: 20px;
+            background-color: #f5fdfc;
+            border: 1px solid #b2dfdb;
             padding: 15px;
-            background-color: #ffffff;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+            border-radius: 8px;
             white-space: pre-wrap;
+            font-family: Consolas, monospace;
+        }
+
+        .loading {
+            color: #999;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
-    <h2>Båd AI-Vurdering</h2>
+    <div class="container">
+        <h1>AI-vurdering af båd – RenDiesel</h1>
 
-    <input type="file" id="file" accept="image/*" multiple required>
-    <textarea id="description" rows="4" placeholder="Bådtype, stand, motor osv." required></textarea>
-    <button onclick="upload()">Få AI-vurdering</button>
+        <label for="file">Upload billeder</label>
+        <input type="file" id="file" accept="image/*" multiple required>
 
-    <div id="response"></div>
+        <label for="description">Beskrivelse af båden</label>
+        <textarea id="description" rows="4" placeholder="F.eks. Nauticat 44, 1982, teakdæk, Perkins motor, velholdt..."></textarea>
+
+        <button onclick="upload()">Få AI-vurdering</button>
+
+        <div id="response" class="loading">Ingen vurdering endnu...</div>
+    </div>
 
     <script>
         async function upload() {
@@ -55,12 +99,14 @@
             const files = document.getElementById("file").files;
             const description = document.getElementById("description").value;
 
-            if (!files.length || !description) {
-                responseDiv.textContent = "Tilføj både billeder og beskrivelse.";
+            if (!files.length || !description.trim()) {
+                responseDiv.textContent = "❗️ Tilføj mindst ét billede og en beskrivelse.";
+                responseDiv.classList.remove("loading");
                 return;
             }
 
-            responseDiv.textContent = "Vurdering behandles af AI...";
+            responseDiv.textContent = "⏳ Vurdering behandles af AI...";
+            responseDiv.classList.add("loading");
 
             const formData = new FormData();
             for (let file of files) {
@@ -76,14 +122,16 @@
 
                 const result = await res.json();
 
-                if (res.ok) {
-                    responseDiv.textContent = result.response;
+                if (res.ok && result.ai_response) {
+                    responseDiv.textContent = "✅ Vurdering klar:\n\n" + result.ai_response;
                 } else {
-                    responseDiv.textContent = "Fejl: " + (result.error || res.statusText);
+                    responseDiv.textContent = "⚠️ Fejl: " + (result.error || "Ukendt fejl.");
                 }
             } catch (err) {
-                responseDiv.textContent = "Netværksfejl: " + err.message;
+                responseDiv.textContent = "🚫 Netværksfejl: " + err.message;
             }
+
+            responseDiv.classList.remove("loading");
         }
     </script>
 </body>
