@@ -29,8 +29,8 @@
   <h1>AI-vurdering af båd</h1>
 
   <form id="uploadForm">
-    <label for="image">Upload billede(r):</label>
-    <input type="file" id="image" name="image" accept="image/*" multiple required>
+    <label for="image">Upload billede:</label>
+    <input type="file" id="image" name="image" accept="image/*" required>
 
     <label for="description">Beskrivelse af båden:</label>
     <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
@@ -51,15 +51,13 @@
       event.preventDefault();
 
       const formData = new FormData();
-      const images = document.getElementById('image').files;
+      const imageFile = document.getElementById('image').files[0];
       const description = document.getElementById('description').value;
-      const reportType = document.getElementById('reportType').value;
+      const purpose = document.getElementById('reportType').value;
 
-      for (let i = 0; i < images.length; i++) {
-        formData.append('images', images[i]);
-      }
+      formData.append('image', imageFile);
       formData.append('description', description);
-      formData.append('report_type', reportType);
+      formData.append('purpose', purpose);
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
@@ -71,7 +69,8 @@
         });
 
         if (!res.ok) {
-          throw new Error('Noget gik galt med serveren.');
+          const err = await res.text();
+          throw new Error('Fejl fra serveren: ' + err);
         }
 
         const data = await res.json();
