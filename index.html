@@ -53,14 +53,14 @@
       const formData = new FormData();
       const imageFiles = document.getElementById('image').files;
       const description = document.getElementById('description').value;
-      const purpose = document.getElementById('reportType').value;
+      const reportType = document.getElementById('reportType').value;
 
       for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('images', imageFiles[i]); // Vigtigt: 'images' i flertal
+        formData.append('images', imageFiles[i]); // ✔️ navn stemmer med FastAPI
       }
 
       formData.append('description', description);
-      formData.append('purpose', purpose);
+      formData.append('report_type', reportType); // ✔️ korrekt navn
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
