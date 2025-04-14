@@ -1,138 +1,95 @@
 <!DOCTYPE html>
 <html lang="da">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>RenDiesel Båd AI-vurdering</title>
-    <style>
-        body {
-            background: linear-gradient(to bottom right, #e8f5ff, #ffffff);
-            font-family: 'Segoe UI', sans-serif;
-            color: #223;
-            padding: 30px;
-        }
-
-        .container {
-            max-width: 700px;
-            margin: auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            border: 1px solid #e0e0e0;
-        }
-
-        h1 {
-            color: #00786e;
-            font-size: 1.8rem;
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        label {
-            font-weight: bold;
-            margin-top: 15px;
-            display: block;
-        }
-
-        input[type="file"],
-        textarea,
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 1rem;
-        }
-
-        textarea {
-            resize: vertical;
-        }
-
-        button {
-            background-color: #00786e;
-            color: white;
-            border: none;
-            font-size: 1.1rem;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #005f59;
-        }
-
-        #response {
-            background-color: #f5fdfc;
-            border: 1px solid #b2dfdb;
-            padding: 15px;
-            border-radius: 8px;
-            white-space: pre-wrap;
-            font-family: Consolas, monospace;
-        }
-
-        .loading {
-            color: #999;
-            font-style: italic;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>AI Bådvurdering – RenDiesel.dk</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      max-width: 800px;
+    }
+    label, textarea, select {
+      display: block;
+      margin-bottom: 1em;
+      width: 100%;
+    }
+    textarea {
+      height: 100px;
+    }
+    .response {
+      margin-top: 2em;
+      padding: 1em;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>AI-vurdering af båd – RenDiesel</h1>
+  <h1>AI-vurdering af båd</h1>
 
-        <label for="file">Upload billeder</label>
-        <input type="file" id="file" accept="image/*" multiple required>
+  <form id="uploadForm">
+    <label for="image">Upload billede(r):</label>
+    <input type="file" id="image" name="image" accept="image/*" multiple required>
 
-        <label for="description">Beskrivelse af båden</label>
-        <textarea id="description" rows="4" placeholder="F.eks. Nauticat 44, 1982, teakdæk, Perkins motor, velholdt..."></textarea>
+    <label for="description">Beskrivelse af båden:</label>
+    <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
 
-        <button onclick="upload()">Få AI-vurdering</button>
+    <label for="reportType">Vurderingstype:</label>
+    <select id="reportType" name="reportType">
+      <option value="private">Privat vurdering</option>
+      <option value="insurance">Til forsikring</option>
+    </select>
 
-        <div id="response" class="loading">Ingen vurdering endnu...</div>
-    </div>
+    <button type="submit">Få AI-vurdering</button>
+  </form>
 
-    <script>
-        async function upload() {
-            const responseDiv = document.getElementById("response");
-            const files = document.getElementById("file").files;
-            const description = document.getElementById("description").value;
+  <div class="response" id="responseBox"></div>
 
-            if (!files.length || !description.trim()) {
-                responseDiv.textContent = "❗️ Tilføj mindst ét billede og en beskrivelse.";
-                responseDiv.classList.remove("loading");
-                return;
-            }
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
 
-            responseDiv.textContent = "⏳ Vurdering behandles af AI...";
-            responseDiv.classList.add("loading");
+      const formData = new FormData();
+      const images = document.getElementById('image').files;
+      const description = document.getElementById('description').value;
+      const reportType = document.getElementById('reportType').value;
 
-            const formData = new FormData();
-            for (let file of files) {
-                formData.append("files", file);
-            }
-            formData.append("description", description);
+      for (let i = 0; i < images.length; i++) {
+        formData.append('images', images[i]);
+      }
+      formData.append('description', description);
+      formData.append('report_type', reportType);
 
-            try {
-                const res = await fetch("https://boat-ai-backend-591818866071.europe-north1.run.app/upload/", {
-                    method: "POST",
-                    body: formData
-                });
+      const responseBox = document.getElementById('responseBox');
+      responseBox.innerHTML = '⏳ Vurderer...';
 
-                const result = await res.json();
+      try {
+        const res = await fetch('https://boat-ai-backend-591818866071.europe-north1.run.app/analyze', {
+          method: 'POST',
+          body: formData
+        });
 
-                if (res.ok && result.ai_response) {
-                    responseDiv.textContent = "✅ Vurdering klar:\n\n" + result.ai_response;
-                } else {
-                    responseDiv.textContent = "⚠️ Fejl: " + (result.error || "Ukendt fejl.");
-                }
-            } catch (err) {
-                responseDiv.textContent = "🚫 Netværksfejl: " + err.message;
-            }
-
-            responseDiv.classList.remove("loading");
+        if (!res.ok) {
+          throw new Error('Noget gik galt med serveren.');
         }
-    </script>
+
+        const data = await res.json();
+
+        if (data.pdf_url) {
+          responseBox.innerHTML = `
+            ✅ Rapport genereret.<br>
+            <a href="${data.pdf_url}" target="_blank">Klik her for at downloade PDF</a>
+          `;
+        } else if (data.report_text) {
+          responseBox.innerText = data.report_text;
+        } else {
+          responseBox.innerText = 'Vurdering modtaget, men ingen tekst eller PDF fundet.';
+        }
+      } catch (error) {
+        responseBox.innerText = 'Fejl: ' + error.message;
+      }
+    });
+  </script>
 </body>
 </html>
