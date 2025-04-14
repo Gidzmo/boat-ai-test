@@ -2,7 +2,7 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8">
-  <title>AI Bådvurdering – RenDiesel.dk kims </title>
+  <title>AI Bådvurdering – RenDiesel.dk</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -29,8 +29,8 @@
   <h1>AI-vurdering af båd</h1>
 
   <form id="uploadForm">
-    <label for="image">Upload billede elle billeder:</label>
-    <input type="file" id="image" name="image" accept="image/*" required>
+    <label for="image">Upload billede(r):</label>
+    <input type="file" id="image" name="image" accept="image/*" multiple required>
 
     <label for="description">Beskrivelse af båden:</label>
     <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
@@ -51,13 +51,20 @@
       event.preventDefault();
 
       const formData = new FormData();
-      const imageFile = document.getElementById('image').files[0];
+      const images = document.getElementById('image').files;
       const description = document.getElementById('description').value;
-      const purpose = document.getElementById('reportType').value;
+      const reportType = document.getElementById('reportType').value;
 
-      formData.append('image', imageFile);
+      if (images.length === 0) {
+        alert("Vælg mindst ét billede.");
+        return;
+      }
+
+      for (let i = 0; i < images.length; i++) {
+        formData.append('images', images[i]);
+      }
       formData.append('description', description);
-      formData.append('purpose', purpose);
+      formData.append('report_type', reportType);
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
@@ -69,8 +76,8 @@
         });
 
         if (!res.ok) {
-          const err = await res.text();
-          throw new Error('Fejl fra serveren: ' + err);
+          const errorText = await res.text();
+          throw new Error(`Serverfejl (${res.status}): ${errorText}`);
         }
 
         const data = await res.json();
