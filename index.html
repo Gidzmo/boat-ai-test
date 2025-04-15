@@ -38,7 +38,8 @@
     <button type="submit">Få AI-vurdering</button>
   </form>
 
-  <div class="response" id="responseBox"></div>
+  <div class="response" id="privateReportBox"><strong>🔎 Privat vurdering:</strong><br><em>Afventer svar...</em></div>
+  <div class="response" id="insuranceReportBox"><strong>🛡️ Forsikringsvurdering:</strong><br><em>Afventer svar...</em></div>
 
   <script>
     document.getElementById('uploadForm').addEventListener('submit', async function(event) {
@@ -49,14 +50,15 @@
       const description = document.getElementById('description').value;
 
       for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('images', imageFiles[i]); // ✔️ navn stemmer med FastAPI
+        formData.append('images', imageFiles[i]);
       }
 
       formData.append('description', description);
-      formData.append('report_type', 'private'); // ✔️ kun privat vurdering anvendes nu
 
-      const responseBox = document.getElementById('responseBox');
-      responseBox.innerHTML = '⏳ Vurderer...';
+      const privateBox = document.getElementById('privateReportBox');
+      const insuranceBox = document.getElementById('insuranceReportBox');
+      privateBox.innerHTML = '<strong>🔎 Privat vurdering:</strong><br><em>Vurderer...</em>';
+      insuranceBox.innerHTML = '<strong>🛡️ Forsikringsvurdering:</strong><br><em>Vurderer...</em>';
 
       try {
         const res = await fetch('https://boat-ai-backend-591818866071.europe-north1.run.app/analyze', {
@@ -71,18 +73,11 @@
 
         const data = await res.json();
 
-        if (data.pdf_url) {
-          responseBox.innerHTML = `
-            ✅ Rapport genereret.<br>
-            <a href="${data.pdf_url}" target="_blank">Klik her for at downloade PDF</a>
-          `;
-        } else if (data.report_text) {
-          responseBox.innerText = data.report_text;
-        } else {
-          responseBox.innerText = 'Vurdering modtaget, men ingen tekst eller PDF fundet.';
-        }
+        privateBox.innerHTML = `<strong>🔎 Privat vurdering:</strong><br>${data.private_report || "Intet svar."}`;
+        insuranceBox.innerHTML = `<strong>🛡️ Forsikringsvurdering:</strong><br>${data.insurance_report || "Intet svar."}`;
+
       } catch (error) {
-        responseBox.innerText = 'Fejl: ' + error.message;
+        privateBox.innerHTML = insuranceBox.innerHTML = 'Fejl: ' + error.message;
       }
     });
   </script>
