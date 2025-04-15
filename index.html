@@ -38,7 +38,8 @@
     <button type="submit">Få AI-vurdering</button>
   </form>
 
-  <div class="response" id="responseBox"></div>
+  <div class="response" id="privateReportBox"><strong>🔸 Privat vurdering:</strong><br></div>
+  <div class="response" id="insuranceReportBox"><strong>🔸 Forsikringsvurdering:</strong><br></div>
 
   <script>
     document.getElementById('uploadForm').addEventListener('submit', async function(event) {
@@ -54,8 +55,10 @@
 
       formData.append('description', description);
 
-      const responseBox = document.getElementById('responseBox');
-      responseBox.innerHTML = '⏳ Vurderer...';
+      const privateBox = document.getElementById('privateReportBox');
+      const insuranceBox = document.getElementById('insuranceReportBox');
+      privateBox.innerHTML = '⏳ Henter privat vurdering...';
+      insuranceBox.innerHTML = '⏳ Henter forsikringsvurdering...';
 
       try {
         const res = await fetch('https://boat-ai-backend-591818866071.europe-north1.run.app/analyze', {
@@ -70,18 +73,21 @@
 
         const data = await res.json();
 
-        if (data.pdf_url) {
-          responseBox.innerHTML = `
-            ✅ Rapport genereret.<br>
-            <a href="${data.pdf_url}" target="_blank">Klik her for at downloade PDF</a>
-          `;
-        } else if (data.report_text) {
-          responseBox.innerText = data.report_text;
+        if (data.report_private) {
+          privateBox.innerHTML = `<strong>🔸 Privat vurdering:</strong><br>${data.report_private}`;
         } else {
-          responseBox.innerText = 'Vurdering modtaget, men ingen tekst eller PDF fundet.';
+          privateBox.innerHTML = 'Ingen privat vurdering fundet.';
         }
+
+        if (data.report_insurance) {
+          insuranceBox.innerHTML = `<strong>🔸 Forsikringsvurdering:</strong><br>${data.report_insurance}`;
+        } else {
+          insuranceBox.innerHTML = 'Ingen forsikringsvurdering fundet.';
+        }
+
       } catch (error) {
-        responseBox.innerText = 'Fejl: ' + error.message;
+        privateBox.innerHTML = '';
+        insuranceBox.innerHTML = 'Fejl: ' + error.message;
       }
     });
   </script>
