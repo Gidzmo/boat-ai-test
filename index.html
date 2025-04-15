@@ -2,14 +2,14 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8">
-  <title>AI Bådvurdering – RenDiesel.dk Kims </title>
+  <title>AI Bådvurdering – RenDiesel.dk</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
       max-width: 800px;
     }
-    label, textarea, select {
+    label, textarea {
       display: block;
       margin-bottom: 1em;
       width: 100%;
@@ -35,12 +35,6 @@
     <label for="description">Beskrivelse af båden:</label>
     <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
 
-    <label for="reportType">Vurderingstype:</label>
-    <select id="reportType" name="report_type">
-      <option value="private">Privat vurdering</option>
-      <option value="insurance">Til forsikring</option>
-    </select>
-
     <button type="submit">Få AI-vurdering</button>
   </form>
 
@@ -53,14 +47,12 @@
       const formData = new FormData();
       const imageFiles = document.getElementById('image').files;
       const description = document.getElementById('description').value;
-      const reportType = document.getElementById('reportType').value;
 
       for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('images', imageFiles[i]); // ✔️ navn stemmer med FastAPI
+        formData.append('images', imageFiles[i]);
       }
 
       formData.append('description', description);
-      formData.append('report_type', reportType); // ✔️ korrekt navn
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
