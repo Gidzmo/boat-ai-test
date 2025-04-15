@@ -2,14 +2,14 @@
 <html lang="da">
 <head>
   <meta charset="UTF-8">
-  <title>AI Bådvurdering – RenDiesel.dk kims nye fil </title>
+  <title>AI Bådvurdering – RenDiesel.dk</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
       max-width: 800px;
     }
-    label, textarea, select, input {
+    label, textarea, select {
       display: block;
       margin-bottom: 1em;
       width: 100%;
@@ -29,17 +29,11 @@
   <h1>AI-vurdering af båd</h1>
 
   <form id="uploadForm">
-    <label for="images">Upload billede(r):</label>
-    <input type="file" id="images" name="images" accept="image/*" multiple required>
+    <label for="image">Upload billede(r):</label>
+    <input type="file" id="image" name="images" accept="image/*" multiple required>
 
     <label for="description">Beskrivelse af båden:</label>
     <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
-
-    <label for="reportType">Vurderingstype:</label>
-    <select id="reportType" name="report_type">
-      <option value="private">Privat vurdering</option>
-      <option value="insurance">Til forsikring</option>
-    </select>
 
     <button type="submit">Få AI-vurdering</button>
   </form>
@@ -51,21 +45,15 @@
       event.preventDefault();
 
       const formData = new FormData();
-      const imageFiles = document.getElementById('images').files;
+      const imageFiles = document.getElementById('image').files;
       const description = document.getElementById('description').value;
-      const reportType = document.getElementById('reportType').value;
-
-      if (!imageFiles.length) {
-        alert("Du skal uploade mindst ét billede.");
-        return;
-      }
 
       for (let i = 0; i < imageFiles.length; i++) {
-        formData.append('images', imageFiles[i]); // Skal matche backend
+        formData.append('images', imageFiles[i]); // ✔️ navn stemmer med FastAPI
       }
 
       formData.append('description', description);
-      formData.append('report_type', reportType); // Skal matche backend
+      formData.append('report_type', 'private'); // ✔️ kun privat vurdering anvendes nu
 
       const responseBox = document.getElementById('responseBox');
       responseBox.innerHTML = '⏳ Vurderer...';
@@ -77,8 +65,8 @@
         });
 
         if (!res.ok) {
-          const errText = await res.text();
-          throw new Error('Fejl fra serveren: ' + errText);
+          const err = await res.text();
+          throw new Error('Fejl fra serveren: ' + err);
         }
 
         const data = await res.json();
@@ -94,7 +82,7 @@
           responseBox.innerText = 'Vurdering modtaget, men ingen tekst eller PDF fundet.';
         }
       } catch (error) {
-        responseBox.innerText = '❌ Fejl: ' + error.message;
+        responseBox.innerText = 'Fejl: ' + error.message;
       }
     });
   </script>
