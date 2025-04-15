@@ -73,14 +73,14 @@
 
         const data = await res.json();
 
-        if (data.report_private) {
-          privateBox.innerHTML = `<strong>🔸 Privat vurdering:</strong><br>${data.report_private}`;
+        if (data.private_report) {
+          privateBox.innerHTML = `<strong>🔸 Privat vurdering:</strong><br>${data.private_report}`;
         } else {
           privateBox.innerHTML = 'Ingen privat vurdering fundet.';
         }
 
-        if (data.report_insurance) {
-          insuranceBox.innerHTML = `<strong>🔸 Forsikringsvurdering:</strong><br>${data.report_insurance}`;
+        if (data.insurance_report) {
+          insuranceBox.innerHTML = `<strong>🔸 Forsikringsvurdering:</strong><br>${data.insurance_report}`;
         } else {
           insuranceBox.innerHTML = 'Ingen forsikringsvurdering fundet.';
         }
