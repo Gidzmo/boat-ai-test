@@ -38,8 +38,8 @@
     <button type="submit">Få AI-vurdering</button>
   </form>
 
-  <div class="response" id="privateBox"><strong>🔵 Privat vurdering:</strong><br></div>
-  <div class="response" id="insuranceBox"><strong>🟠 Forsikringsvurdering:</strong><br></div>
+  <div class="response" id="privateReportBox"><strong>🔸 Privat vurdering:</strong><br></div>
+  <div class="response" id="insuranceReportBox"><strong>🔸 Forsikringsvurdering:</strong><br></div>
 
   <script>
     document.getElementById('uploadForm').addEventListener('submit', async function(event) {
@@ -55,10 +55,10 @@
 
       formData.append('description', description);
 
-      const privateBox = document.getElementById('privateBox');
-      const insuranceBox = document.getElementById('insuranceBox');
-      privateBox.innerHTML = '⏳ Privat vurdering under behandling...';
-      insuranceBox.innerHTML = '⏳ Forsikringsvurdering under behandling...';
+      const privateBox = document.getElementById('privateReportBox');
+      const insuranceBox = document.getElementById('insuranceReportBox');
+      privateBox.innerHTML = '⏳ Henter privat vurdering...';
+      insuranceBox.innerHTML = '⏳ Henter forsikringsvurdering...';
 
       try {
         const res = await fetch('https://boat-ai-backend-591818866071.europe-north1.run.app/analyze', {
@@ -73,12 +73,21 @@
 
         const data = await res.json();
 
-        privateBox.innerHTML = `<strong>🔵 Privat vurdering:</strong><br>${data.report_private || 'Ingen tekst modtaget'}`;
-        insuranceBox.innerHTML = `<strong>🟠 Forsikringsvurdering:</strong><br>${data.report_insurance || 'Ingen tekst modtaget'}`;
+        if (data.report_private) {
+          privateBox.innerHTML = `<strong>🔸 Privat vurdering:</strong><br>${data.report_private}`;
+        } else {
+          privateBox.innerHTML = 'Ingen privat vurdering fundet.';
+        }
+
+        if (data.report_insurance) {
+          insuranceBox.innerHTML = `<strong>🔸 Forsikringsvurdering:</strong><br>${data.report_insurance}`;
+        } else {
+          insuranceBox.innerHTML = 'Ingen forsikringsvurdering fundet.';
+        }
 
       } catch (error) {
-        privateBox.innerHTML = 'Fejl: ' + error.message;
-        insuranceBox.innerHTML = '';
+        privateBox.innerHTML = '';
+        insuranceBox.innerHTML = 'Fejl: ' + error.message;
       }
     });
   </script>
