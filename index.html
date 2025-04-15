@@ -9,7 +9,7 @@
       margin: 40px;
       max-width: 800px;
     }
-    label, textarea {
+    label, textarea, select {
       display: block;
       margin-bottom: 1em;
       width: 100%;
@@ -29,36 +29,58 @@
   <h1>AI-vurdering af båd</h1>
 
   <form id="uploadForm">
-    <label for="image">Upload billede(r):</label>
-    <input type="file" id="image" name="images" accept="image/*" multiple required>
+    <label for="reportType">Vælg type vurdering:</label>
+    <select id="reportType" name="report_type" required>
+      <option value="">-- Vælg --</option>
+      <option value="private">Privat</option>
+      <option value="insurance">Forsikring</option>
+      <option value="teknisk">Tilstandsrapport</option>
+      <option value="finans">Finansiering</option>
+    </select>
 
-    <label for="description">Beskrivelse af båden:</label>
-    <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
+    <div id="formDetails" style="display:none;">
+      <label for="image">Upload billede(r):</label>
+      <input type="file" id="image" name="images" accept="image/*" multiple required>
 
-    <button type="submit">Få AI-vurdering</button>
+      <label for="description">Beskrivelse af båden:</label>
+      <textarea id="description" name="description" placeholder="Fx: Nauticat 33, årgang 1978, teakdæk, ny motor 2020, mv."></textarea>
+
+      <button type="submit">Få AI-vurdering</button>
+    </div>
   </form>
 
-  <div class="response" id="privateReportBox"><strong>🔸 Privat vurdering:</strong><br></div>
-  <div class="response" id="insuranceReportBox"><strong>🔸 Forsikringsvurdering:</strong><br></div>
+  <div class="response" id="resultBox"></div>
 
   <script>
-    document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+    const reportTypeSelect = document.getElementById('reportType');
+    const formDetails = document.getElementById('formDetails');
+    const resultBox = document.getElementById('resultBox');
+
+    reportTypeSelect.addEventListener('change', function () {
+      formDetails.style.display = this.value ? 'block' : 'none';
+    });
+
+    document.getElementById('uploadForm').addEventListener('submit', async function (event) {
       event.preventDefault();
 
       const formData = new FormData();
       const imageFiles = document.getElementById('image').files;
       const description = document.getElementById('description').value;
+      const reportType = document.getElementById('reportType').value;
+
+      if (!reportType) {
+        alert("Du skal vælge en vurderingstype.");
+        return;
+      }
 
       for (let i = 0; i < imageFiles.length; i++) {
         formData.append('images', imageFiles[i]);
       }
 
       formData.append('description', description);
+      formData.append('report_type', reportType);
 
-      const privateBox = document.getElementById('privateReportBox');
-      const insuranceBox = document.getElementById('insuranceReportBox');
-      privateBox.innerHTML = '⏳ Henter privat vurdering...';
-      insuranceBox.innerHTML = '⏳ Henter forsikringsvurdering...';
+      resultBox.innerHTML = '⏳ Vurderer...';
 
       try {
         const res = await fetch('https://boat-ai-backend-591818866071.europe-north1.run.app/analyze', {
@@ -72,22 +94,9 @@
         }
 
         const data = await res.json();
-
-        if (data.private_report) {
-          privateBox.innerHTML = `<strong>🔸 Privat vurdering:</strong><br>${data.private_report}`;
-        } else {
-          privateBox.innerHTML = 'Ingen privat vurdering fundet.';
-        }
-
-        if (data.insurance_report) {
-          insuranceBox.innerHTML = `<strong>🔸 Forsikringsvurdering:</strong><br>${data.insurance_report}`;
-        } else {
-          insuranceBox.innerHTML = 'Ingen forsikringsvurdering fundet.';
-        }
-
+        resultBox.innerHTML = `<strong>🔹 Vurdering (${reportType}):</strong><br><br>${data.report || "Ingen vurdering modtaget."}`;
       } catch (error) {
-        privateBox.innerHTML = '';
-        insuranceBox.innerHTML = 'Fejl: ' + error.message;
+        resultBox.innerHTML = 'Fejl: ' + error.message;
       }
     });
   </script>
