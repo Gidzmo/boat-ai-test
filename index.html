@@ -23,6 +23,13 @@
       border: 1px solid #ccc;
       white-space: pre-wrap;
     }
+    #dieselpestHelp {
+      background-color: #f0f8ff;
+      border-left: 4px solid #007bff;
+      padding: 1em;
+      margin-top: 1em;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -38,7 +45,28 @@
       <option value="finans">Finansiering</option>
       <option value="miljoe">Miljøvurdering</option>
       <option value="udstyrsliste">Udstyrsliste</option>
+      <option value="dieselpest">Dieselpest vurdering</option>
     </select>
+
+    <div id="dieselpestHelp">
+      <strong>📸 Vejledning til billeder og oplysninger:</strong>
+      <ul>
+        <li>🔧 Tag billede af diesel i glas eller beholder</li>
+        <li>🛢️ Tag billede af diesel- eller vandudskillerfilter</li>
+        <li>📷 Tag billede ind i tanken, hvis muligt</li>
+        <li>🚪 Vis hvordan man kommer til tanken – adgangsforhold</li>
+        <li>🧰 Tag billede af motorrum, hvis relevant</li>
+      </ul>
+      <p><strong>Beskriv i tekst:</strong></p>
+      <ul>
+        <li>Hvornår blev der sidst tanket?</li>
+        <li>Hvor meget diesel er i tanken?</li>
+        <li>Har båden sejlet eller stået stille?</li>
+        <li>Oplever du motorstop eller tilstoppede filtre?</li>
+        <li>Lugter dieselen surt eller muggent?</li>
+      </ul>
+      <p><strong>Husk:</strong> Sørg for adgang til <strong>230V strøm</strong> og at vi kan køre en <strong>sækkevogn</strong> hen til båden.</p>
+    </div>
 
     <div id="formDetails" style="display:none;">
       <label for="image">Upload billede(r):</label>
@@ -57,9 +85,12 @@
     const reportTypeSelect = document.getElementById('reportType');
     const formDetails = document.getElementById('formDetails');
     const resultBox = document.getElementById('resultBox');
+    const dieselpestHelp = document.getElementById('dieselpestHelp');
 
     reportTypeSelect.addEventListener('change', function () {
-      formDetails.style.display = this.value ? 'block' : 'none';
+      const selected = this.value;
+      formDetails.style.display = selected ? 'block' : 'none';
+      dieselpestHelp.style.display = selected === 'dieselpest' ? 'block' : 'none';
     });
 
     document.getElementById('uploadForm').addEventListener('submit', async function (event) {
